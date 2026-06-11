@@ -1,0 +1,23 @@
+import { Router } from "express";
+import { createRider } from "../controllers/rider.controller.js";
+import { getPublicSettings } from "../controllers/settings.controller.js";
+import { upload } from "../middlewares/upload.js";
+import { validate } from "../middlewares/validate.js";
+import { asyncHandler } from "../utils/asyncHandler.js";
+import { createRiderSchema } from "../validators/rider.validator.js";
+
+export const publicRoutes = Router();
+
+publicRoutes.get("/settings", asyncHandler(getPublicSettings));
+
+publicRoutes.post(
+  "/riders",
+  upload.fields([
+    { name: "dlFront", maxCount: 1 },
+    { name: "dlBack", maxCount: 1 },
+    { name: "aadhaarFront", maxCount: 1 },
+    { name: "aadhaarBack", maxCount: 1 }
+  ]),
+  validate(createRiderSchema),
+  asyncHandler(createRider)
+);
