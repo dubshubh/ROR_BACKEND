@@ -17,11 +17,17 @@ const allowedOrigins = new Set([
   "http://localhost:3001",
   "http://127.0.0.1:3001"
 ]);
+const vercelProjectOrigin = /^https:\/\/ror-frontend(?:-[a-z0-9-]+)?-shubham-dubeys-projects-08e5e38f\.vercel\.app$/;
+
+function isAllowedOrigin(origin: string) {
+  const normalizedOrigin = origin.replace(/\/$/, "");
+  return allowedOrigins.has(normalizedOrigin) || vercelProjectOrigin.test(normalizedOrigin);
+}
 
 app.use(
   cors({
     origin(origin, callback) {
-      if (!origin || allowedOrigins.has(origin.replace(/\/$/, ""))) return callback(null, true);
+      if (!origin || isAllowedOrigin(origin)) return callback(null, true);
       return callback(new Error(`CORS blocked origin: ${origin}`));
     },
     credentials: true
