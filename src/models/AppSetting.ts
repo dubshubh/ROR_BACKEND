@@ -11,7 +11,13 @@ const fileSchema = new Schema(
 const appSettingSchema = new Schema(
   {
     key: { type: String, required: true, unique: true, default: "default" },
-    logo: { type: fileSchema, default: null }
+    logo: { type: fileSchema, default: null },
+    commandCenter: {
+      launchTitle: { type: String, default: "Sunrise Ride to Alibaug", trim: true, maxlength: 120 },
+      launchDetails: { type: String, default: "Ride start: 5:30 AM · Meet point: Gateway of the city", trim: true, maxlength: 240 },
+      membersCount: { type: String, default: "120+", trim: true, maxlength: 20 },
+      runsCount: { type: String, default: "35", trim: true, maxlength: 20 }
+    }
   },
   { timestamps: true }
 );

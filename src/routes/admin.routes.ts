@@ -9,7 +9,7 @@ import {
   getRiders,
   updateRiderStatus
 } from "../controllers/rider.controller.js";
-import { updateLogo } from "../controllers/settings.controller.js";
+import { updateCommandCenter, updateLogo } from "../controllers/settings.controller.js";
 import { createContent, deleteContent, listAdminContent, updateContent } from "../controllers/content.controller.js";
 import { requireAdmin } from "../middlewares/auth.js";
 import { imageUpload, logoUpload } from "../middlewares/upload.js";
@@ -28,6 +28,7 @@ adminRoutes.post("/content/:kind", imageUpload.single("image"), asyncHandler(cre
 adminRoutes.put("/content/:id", imageUpload.single("image"), asyncHandler(updateContent));
 adminRoutes.delete("/content/:id", asyncHandler(deleteContent));
 adminRoutes.patch("/settings/logo", logoUpload.single("logo"), asyncHandler(updateLogo));
+adminRoutes.patch("/settings/command-center", asyncHandler(updateCommandCenter));
 adminRoutes.get("/riders", validate(listRidersSchema), asyncHandler(getRiders));
 adminRoutes.get("/riders/export/csv", asyncHandler(exportCsv));
 adminRoutes.get("/riders/export/excel", asyncHandler(exportExcel));
