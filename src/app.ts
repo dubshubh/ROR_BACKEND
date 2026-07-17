@@ -11,8 +11,7 @@ export const app = express();
 
 app.use(helmet());
 const allowedOrigins = new Set([
-  env.FRONTEND_URL,
-  ...env.FRONTEND_URL.split(",").map((origin) => origin.trim()),
+  ...env.FRONTEND_URL.split(",").map((origin) => origin.trim().replace(/\/$/, "")),
   "http://localhost:3000",
   "http://127.0.0.1:3000",
   "http://localhost:3001",
@@ -22,7 +21,7 @@ const allowedOrigins = new Set([
 app.use(
   cors({
     origin(origin, callback) {
-      if (!origin || allowedOrigins.has(origin)) return callback(null, true);
+      if (!origin || allowedOrigins.has(origin.replace(/\/$/, ""))) return callback(null, true);
       return callback(new Error(`CORS blocked origin: ${origin}`));
     },
     credentials: true

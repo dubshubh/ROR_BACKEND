@@ -1,5 +1,5 @@
 import bcrypt from "bcryptjs";
-import { Schema, model, type InferSchemaType } from "mongoose";
+import { Schema, model, type HydratedDocument, type InferSchemaType } from "mongoose";
 
 const adminSchema = new Schema(
   {
@@ -20,8 +20,7 @@ adminSchema.methods.comparePassword = function comparePassword(candidate: string
   return bcrypt.compare(candidate, this.password);
 };
 
-export type AdminDocument = InferSchemaType<typeof adminSchema> & {
-  _id: string;
+export type AdminDocument = HydratedDocument<InferSchemaType<typeof adminSchema>> & {
   comparePassword(candidate: string): Promise<boolean>;
 };
 

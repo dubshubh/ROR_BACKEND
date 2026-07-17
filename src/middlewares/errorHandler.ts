@@ -8,7 +8,7 @@ export const errorHandler: ErrorRequestHandler = (err, _req, res, _next) => {
     const message = err.code === "LIMIT_FILE_SIZE" ? "Uploaded file is too large" : err.message;
     return sendError(res, message, 422);
   }
-  if (err?.message?.includes("files are allowed") || err?.message?.includes("logo files are allowed")) {
+  if (err?.message?.includes("files are allowed") || err?.message?.includes("image files are allowed")) {
     return sendError(res, err.message, 422);
   }
   if (err?.code === 11000) {

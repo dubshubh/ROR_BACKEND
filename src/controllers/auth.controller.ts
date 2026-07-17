@@ -5,7 +5,8 @@ import { Admin, AdminDocument } from "../models/Admin.js";
 import { sendSuccess } from "../utils/apiResponse.js";
 
 export async function loginAdmin(req: Request, res: Response) {
-  const admin = (await Admin.findOne({ email: req.body.email })) as AdminDocument | null;
+  const email = req.body.email.trim().toLowerCase();
+  const admin = (await Admin.findOne({ email })) as AdminDocument | null;
   if (!admin || !(await admin.comparePassword(req.body.password))) {
     return res.status(401).json({ success: false, message: "Invalid email or password" });
   }

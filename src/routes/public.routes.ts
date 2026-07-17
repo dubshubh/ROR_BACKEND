@@ -1,5 +1,6 @@
 import { Router } from "express";
 import { createRider } from "../controllers/rider.controller.js";
+import { listPublicContent } from "../controllers/content.controller.js";
 import { getPublicSettings } from "../controllers/settings.controller.js";
 import { upload } from "../middlewares/upload.js";
 import { validate } from "../middlewares/validate.js";
@@ -9,6 +10,7 @@ import { createRiderSchema } from "../validators/rider.validator.js";
 export const publicRoutes = Router();
 
 publicRoutes.get("/settings", asyncHandler(getPublicSettings));
+publicRoutes.get("/content", asyncHandler(listPublicContent));
 
 publicRoutes.post(
   "/riders",

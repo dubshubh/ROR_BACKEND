@@ -43,7 +43,7 @@ ADMIN_EMAIL=admin@example.com
 ADMIN_PASSWORD=ChangeMe123!
 ```
 
-Seed the admin account:
+The configured admin account is created or synchronized automatically whenever the API starts. You can also seed it manually:
 
 ```powershell
 npm run seed:admin
