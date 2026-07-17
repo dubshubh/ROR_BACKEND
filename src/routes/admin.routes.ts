@@ -17,6 +17,8 @@ import { validate } from "../middlewares/validate.js";
 import { asyncHandler } from "../utils/asyncHandler.js";
 import { loginSchema } from "../validators/admin.validator.js";
 import { listRidersSchema, updateStatusSchema } from "../validators/rider.validator.js";
+import { deletePartnerEnquiry, listPartnerEnquiries, updatePartnerEnquiry } from "../controllers/partner.controller.js";
+import { updatePartnerEnquirySchema } from "../validators/partner.validator.js";
 
 export const adminRoutes = Router();
 
@@ -29,6 +31,9 @@ adminRoutes.put("/content/:id", imageUpload.single("image"), asyncHandler(update
 adminRoutes.delete("/content/:id", asyncHandler(deleteContent));
 adminRoutes.patch("/settings/logo", logoUpload.single("logo"), asyncHandler(updateLogo));
 adminRoutes.patch("/settings/command-center", asyncHandler(updateCommandCenter));
+adminRoutes.get("/partner-enquiries", asyncHandler(listPartnerEnquiries));
+adminRoutes.patch("/partner-enquiries/:id", validate(updatePartnerEnquirySchema), asyncHandler(updatePartnerEnquiry));
+adminRoutes.delete("/partner-enquiries/:id", asyncHandler(deletePartnerEnquiry));
 adminRoutes.get("/riders", validate(listRidersSchema), asyncHandler(getRiders));
 adminRoutes.get("/riders/export/csv", asyncHandler(exportCsv));
 adminRoutes.get("/riders/export/excel", asyncHandler(exportExcel));

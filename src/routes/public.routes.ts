@@ -6,11 +6,14 @@ import { upload } from "../middlewares/upload.js";
 import { validate } from "../middlewares/validate.js";
 import { asyncHandler } from "../utils/asyncHandler.js";
 import { createRiderSchema } from "../validators/rider.validator.js";
+import { createPartnerEnquiry } from "../controllers/partner.controller.js";
+import { createPartnerEnquirySchema } from "../validators/partner.validator.js";
 
 export const publicRoutes = Router();
 
 publicRoutes.get("/settings", asyncHandler(getPublicSettings));
 publicRoutes.get("/content", asyncHandler(listPublicContent));
+publicRoutes.post("/partner-enquiries", validate(createPartnerEnquirySchema), asyncHandler(createPartnerEnquiry));
 
 publicRoutes.post(
   "/riders",
