@@ -30,7 +30,7 @@ Copy-Item .env.example .env
 Update `.env` with your local MongoDB, JWT, admin, and Cloudinary values:
 
 ```env
-PORT=5000
+PORT=8000
 NODE_ENV=development
 MONGODB_URI=mongodb://127.0.0.1:27017/rider-management
 JWT_SECRET=replace-with-at-least-16-characters
@@ -58,7 +58,7 @@ npm run dev
 Default API URL:
 
 ```text
-http://localhost:5000/api
+http://localhost:8000/api
 ```
 
 ## Scripts

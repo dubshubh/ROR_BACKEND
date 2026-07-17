@@ -35,3 +35,13 @@ export const imageUpload = multer({
     cb(null, true);
   }
 });
+
+export const contentMediaUpload = multer({
+  storage: multer.memoryStorage(),
+  limits: { fileSize: 25 * 1024 * 1024, files: 10 },
+  fileFilter: (_req, file, cb) => {
+    const allowed = [...logoMimeTypes, "video/mp4", "video/webm"];
+    if (!allowed.includes(file.mimetype)) return cb(new Error("Only jpg, jpeg, png, webp, mp4, and webm media files are allowed"));
+    cb(null, true);
+  }
+});

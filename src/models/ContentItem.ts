@@ -7,14 +7,20 @@ const imageSchema = new Schema(
 
 const contentItemSchema = new Schema(
   {
-    kind: { type: String, enum: ["ride", "photo", "brand"], required: true, index: true },
+    kind: { type: String, enum: ["event", "ride", "brand", "photo", "intercity"], required: true, index: true },
     title: { type: String, required: true, trim: true, maxlength: 120 },
     description: { type: String, default: "", trim: true, maxlength: 1000 },
     date: { type: Date },
+    endDate: { type: Date },
     status: { type: String, enum: ["upcoming", "completed"], default: "upcoming" },
     location: { type: String, default: "", trim: true, maxlength: 160 },
+    startLocation: { type: String, default: "", trim: true, maxlength: 160 },
+    destination: { type: String, default: "", trim: true, maxlength: 160 },
     category: { type: String, default: "", trim: true, maxlength: 160 },
+    videoUrl: { type: String, default: "", trim: true, maxlength: 500 },
     image: imageSchema,
+    images: { type: [imageSchema], default: [] },
+    videos: { type: [imageSchema], default: [] },
     sortOrder: { type: Number, default: 0 }
   },
   { timestamps: true }
