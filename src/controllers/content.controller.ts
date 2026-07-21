@@ -22,6 +22,11 @@ function fields(body: Record<string, unknown>, kind: string) {
     error.statusCode = 422;
     throw error;
   }
+  const routeWaypoints = String(body.routeWaypoints ?? "")
+    .split(/\r?\n|,/)
+    .map((value) => value.trim())
+    .filter(Boolean)
+    .slice(0, 8);
   return {
     kind,
     title,
@@ -29,9 +34,10 @@ function fields(body: Record<string, unknown>, kind: string) {
     location: String(body.location ?? "").trim(),
     startLocation: String(body.startLocation ?? "").trim(),
     destination: String(body.destination ?? "").trim(),
+    routeWaypoints,
     category: String(body.category ?? "").trim(),
     videoUrl: String(body.videoUrl ?? "").trim(),
-    status: body.status === "completed" ? "completed" : "upcoming",
+    status: body.status === "completed" ? "completed" : body.status === "ongoing" ? "ongoing" : "upcoming",
     date: body.date ? new Date(String(body.date)) : undefined,
     endDate: body.endDate ? new Date(String(body.endDate)) : undefined,
     sortOrder: Number(body.sortOrder) || 0
