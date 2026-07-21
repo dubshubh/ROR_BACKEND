@@ -3,6 +3,7 @@ import { FilterQuery } from "mongoose";
 import { Rider, RiderDocument } from "../models/Rider.js";
 import { maskAadhaar } from "../utils/mask.js";
 import { toCsv } from "../utils/csv.js";
+import { escapeRegex } from "../utils/regex.js";
 
 export type ListOptions = {
   page: number;
@@ -18,10 +19,10 @@ export type ListOptions = {
 export function buildRiderFilter(options: ListOptions) {
   const filter: FilterQuery<RiderDocument> = {};
   if (options.status) filter.status = options.status;
-  if (options.city) filter.city = new RegExp(options.city, "i");
-  if (options.state) filter.state = new RegExp(options.state, "i");
+  if (options.city) filter.city = new RegExp(escapeRegex(options.city), "i");
+  if (options.state) filter.state = new RegExp(escapeRegex(options.state), "i");
   if (options.search) {
-    const rx = new RegExp(options.search, "i");
+    const rx = new RegExp(escapeRegex(options.search), "i");
     filter.$or = [{ fullName: rx }, { email: rx }, { phone: rx }, { dlNumber: rx }, { bikeNumber: rx }];
   }
   return filter;
@@ -37,7 +38,17 @@ export async function listRiders(options: ListOptions) {
   ]);
 
   return {
-    riders: riders.map((rider) => ({ ...rider, aadhaarNumber: maskAadhaar(rider.aadhaarNumber) })),
+    riders: riders.map((rider) => {
+      const { aadhaarFront, aadhaarBack, dlFront, dlBack, ...safeRider } = rider;
+      return {
+        ...safeRider,
+        aadhaarNumber: maskAadhaar(rider.aadhaarNumber),
+        aadhaarFront: { available: Boolean(aadhaarFront), kind: aadhaarFront?.url.toLowerCase().includes(".pdf") ? "pdf" : "image" },
+        aadhaarBack: { available: Boolean(aadhaarBack), kind: aadhaarBack?.url.toLowerCase().includes(".pdf") ? "pdf" : "image" },
+        dlFront: { available: Boolean(dlFront), kind: dlFront?.url.toLowerCase().includes(".pdf") ? "pdf" : "image" },
+        dlBack: { available: Boolean(dlBack), kind: dlBack?.url.toLowerCase().includes(".pdf") ? "pdf" : "image" }
+      };
+    }),
     meta: { page: options.page, limit: options.limit, total, totalPages: Math.ceil(total / options.limit) }
   };
 }

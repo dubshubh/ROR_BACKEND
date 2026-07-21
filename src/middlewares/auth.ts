@@ -2,6 +2,7 @@ import { NextFunction, Request, Response } from "express";
 import jwt from "jsonwebtoken";
 import { env } from "../config/env.js";
 import { Admin } from "../models/Admin.js";
+import { readCookie } from "../utils/cookies.js";
 
 declare global {
   namespace Express {
@@ -12,8 +13,7 @@ declare global {
 }
 
 export async function requireAdmin(req: Request, res: Response, next: NextFunction) {
-  const header = req.headers.authorization;
-  const token = header?.startsWith("Bearer ") ? header.slice(7) : undefined;
+  const token = readCookie(req, env.AUTH_COOKIE_NAME);
   if (!token) return res.status(401).json({ success: false, message: "Authentication required" });
 
   try {

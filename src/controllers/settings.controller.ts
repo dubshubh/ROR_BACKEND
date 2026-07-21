@@ -1,7 +1,8 @@
 import { Request, Response } from "express";
 import { AppSetting } from "../models/AppSetting.js";
-import { deleteCloudinaryFile, uploadBuffer } from "../services/cloudinary.service.js";
+import { deleteAssets, rollbackUploadedAssets, uploadBuffer } from "../services/cloudinary.service.js";
 import { sendSuccess } from "../utils/apiResponse.js";
+import { recordAudit } from "../services/audit.service.js";
 
 async function getOrCreateSettings() {
   return AppSetting.findOneAndUpdate({ key: "default" }, { $setOnInsert: { key: "default" } }, { upsert: true, new: true });
@@ -29,6 +30,7 @@ export async function updateCommandCenter(req: Request, res: Response) {
   const settings = await getOrCreateSettings();
   settings.commandCenter = commandCenter;
   await settings.save();
+  await recordAudit({ adminId: req.admin?.id, action: "settings.command-center-updated", entityType: "settings", entityId: settings.id });
   return sendSuccess(res, { logo: settings.logo, commandCenter: settings.commandCenter }, "Command center updated");
 }
 
@@ -41,12 +43,16 @@ export async function updateLogo(req: Request, res: Response) {
   const previousLogo = settings.logo;
   const logo = await uploadBuffer(req.file, "site/logo");
 
-  settings.logo = logo;
-  await settings.save();
-
-  if (previousLogo?.publicId) {
-    await deleteCloudinaryFile(previousLogo.publicId);
+  try {
+    settings.logo = logo;
+    await settings.save();
+  } catch (error) {
+    await rollbackUploadedAssets([logo]);
+    throw error;
   }
+
+  await deleteAssets([previousLogo]);
+  await recordAudit({ adminId: req.admin?.id, action: "settings.logo-replaced", entityType: "settings", entityId: settings.id });
 
   return sendSuccess(res, { logo, commandCenter: settings.commandCenter }, "Logo updated");
 }

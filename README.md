@@ -35,12 +35,22 @@ NODE_ENV=development
 MONGODB_URI=mongodb://127.0.0.1:27017/rider-management
 JWT_SECRET=replace-with-at-least-16-characters
 JWT_EXPIRES_IN=7d
+AUTH_COOKIE_NAME=ror_admin_session
+AUTH_COOKIE_MAX_AGE_MS=604800000
+COOKIE_SAME_SITE=lax
+COOKIE_DOMAIN=
+TRUST_PROXY=false
 FRONTEND_URL=http://localhost:3000,http://localhost:3001
 CLOUDINARY_CLOUD_NAME=your-cloud-name
 CLOUDINARY_API_KEY=your-api-key
 CLOUDINARY_API_SECRET=your-api-secret
 ADMIN_EMAIL=admin@example.com
 ADMIN_PASSWORD=ChangeMe123!
+EMAIL_ENABLED=false
+BREVO_API_KEY=your-brevo-api-key
+BREVO_SENDER_EMAIL=rebelsonroads@gmail.com
+BREVO_SENDER_NAME=Rebels on Roads
+BREVO_REPLY_TO_EMAIL=rebelsonroads@gmail.com
 ```
 
 The configured admin account is created or synchronized automatically whenever the API starts. You can also seed it manually:
@@ -68,6 +78,7 @@ npm run dev          # Start API in watch mode
 npm run build        # Compile TypeScript to dist/
 npm run start        # Run compiled production server
 npm run seed:admin   # Create/update admin user from .env
+npm test             # Run Vitest tests
 ```
 
 ## Public Routes
@@ -79,10 +90,12 @@ POST /api/riders
 
 ## Admin Routes
 
-Admin routes require a bearer token from `/api/admin/login`.
+Admin login issues an HttpOnly session cookie. Browser clients must send credentials with API requests.
 
 ```text
 POST   /api/admin/login
+GET    /api/admin/me
+POST   /api/admin/logout
 GET    /api/admin/stats
 GET    /api/admin/riders
 GET    /api/admin/riders/:id
@@ -91,7 +104,16 @@ DELETE /api/admin/riders/:id
 PATCH  /api/admin/settings/logo
 GET    /api/admin/riders/export/csv
 GET    /api/admin/riders/export/excel
+GET    /api/admin/partner-enquiries
+PATCH  /api/admin/partner-enquiries/:id
+DELETE /api/admin/partner-enquiries/:id
+GET    /api/admin/emails
+POST   /api/admin/emails/send
 ```
+
+## Brevo email delivery
+
+Verify `BREVO_SENDER_EMAIL` as a sender in Brevo, add the API key, then set `EMAIL_ENABLED=true`. New registrations receive a pending-review receipt; the membership welcome email is sent only on the first transition to `approved`. Admins can use `/admin/email-center` for approved-rider updates, brand collaboration/thanks messages, combined announcements, and custom recipients. Email delivery failures are logged and never undo rider registration or approval.
 
 ## Upload Rules
 

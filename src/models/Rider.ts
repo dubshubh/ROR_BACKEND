@@ -37,6 +37,8 @@ const riderSchema = new Schema(
 );
 
 riderSchema.index({ fullName: "text", email: "text", phone: "text", dlNumber: "text", bikeNumber: "text" });
+riderSchema.index({ status: 1, createdAt: -1 });
+riderSchema.index({ city: 1, state: 1 });
 
 export type RiderDocument = InferSchemaType<typeof riderSchema> & { _id: string };
 export const Rider = model("Rider", riderSchema);

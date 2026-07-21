@@ -10,6 +10,7 @@ export function validate(schema: AnyZodObject) {
       return res.status(422).json({
         success: false,
         message: firstFieldError ?? "Validation failed",
+        code: "VALIDATION_ERROR",
         errors
       });
     }

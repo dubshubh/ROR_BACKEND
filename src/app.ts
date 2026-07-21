@@ -6,22 +6,33 @@ import { env } from "./config/env.js";
 import { adminRoutes } from "./routes/admin.routes.js";
 import { publicRoutes } from "./routes/public.routes.js";
 import { errorHandler } from "./middlewares/errorHandler.js";
+import { requestLogger } from "./middlewares/requestLogger.js";
 
 export const app = express();
 
+if (env.TRUST_PROXY) app.set("trust proxy", 1);
+app.use(requestLogger);
 app.use(helmet());
 const allowedOrigins = new Set([
   ...env.FRONTEND_URL.split(",").map((origin) => origin.trim().replace(/\/$/, "")),
-  "http://localhost:3000",
-  "http://127.0.0.1:3000",
-  "http://localhost:3001",
-  "http://127.0.0.1:3001"
+  ...(env.NODE_ENV === "development"
+    ? ["http://localhost:3000", "http://127.0.0.1:3000", "http://localhost:3001", "http://127.0.0.1:3001"]
+    : [])
 ]);
-const vercelProjectOrigin = /^https:\/\/ror-frontend(?:-[a-z0-9-]+)?-shubham-dubeys-projects-08e5e38f\.vercel\.app$/;
 
 function isAllowedOrigin(origin: string) {
   const normalizedOrigin = origin.replace(/\/$/, "");
-  return allowedOrigins.has(normalizedOrigin) || vercelProjectOrigin.test(normalizedOrigin);
+  if (allowedOrigins.has(normalizedOrigin)) return true;
+
+  if (env.NODE_ENV === "development") {
+    try {
+      return new URL(normalizedOrigin).hostname.endsWith(".trycloudflare.com");
+    } catch {
+      return false;
+    }
+  }
+
+  return false;
 }
 
 app.use(
