@@ -7,7 +7,10 @@ const booleanFromForm = z.preprocess((value) => {
   if (value === "false") return false;
   return value;
 }, z.boolean());
-const optionalString = z.preprocess((value) => (value === "" ? undefined : value), z.string().optional());
+const optionalLicense = z.preprocess(
+  (value) => typeof value === "string" && value.trim() === "" ? undefined : value,
+  z.string().trim().min(5).max(30).regex(/^[A-Za-z0-9 -]+$/, "Enter a valid driving licence number").transform((value) => value.toUpperCase()).optional()
+);
 
 function isAtLeast18(date: Date) {
   const today = new Date();
@@ -17,23 +20,23 @@ function isAtLeast18(date: Date) {
 
 export const createRiderSchema = z.object({
   body: z.object({
-    fullName: z.string().min(3),
-    email: z.string().email(),
-    phone: z.string().regex(indianPhone, "Enter a valid Indian phone number"),
+    fullName: z.string().trim().min(3).max(100),
+    email: z.string().trim().email().max(200).transform((value) => value.toLowerCase()),
+    phone: z.string().trim().regex(indianPhone, "Enter a valid Indian phone number"),
     dob: z.coerce.date().refine(isAtLeast18, "Rider must be at least 18 years old"),
-    gender: z.string().min(1),
-    bloodGroup: z.string().min(1),
-    emergencyContact: z.string().regex(indianPhone, "Enter a valid Indian emergency contact"),
-    city: z.string().min(1),
-    state: z.string().min(1),
-    bikeModel: z.string().min(1),
-    bikeNumber: z.string().min(1),
-    ridingExperience: z.coerce.number().min(0),
-    dlNumber: optionalString,
-    aadhaarNumber: z.string().regex(/^\d{12}$/, "Aadhaar must be exactly 12 digits"),
+    gender: z.enum(["Male", "Female", "Other"]),
+    bloodGroup: z.enum(["A+", "A-", "B+", "B-", "AB+", "AB-", "O+", "O-"]),
+    emergencyContact: z.string().trim().regex(indianPhone, "Enter a valid Indian emergency contact"),
+    city: z.string().trim().min(1).max(80),
+    state: z.string().trim().min(1).max(80),
+    bikeModel: z.string().trim().min(1).max(100),
+    bikeNumber: z.string().trim().min(6).max(20).regex(/^[A-Za-z0-9 -]+$/, "Enter a valid bike number").transform((value) => value.toUpperCase()),
+    ridingExperience: z.coerce.number().min(0).max(80),
+    dlNumber: optionalLicense,
+    aadhaarNumber: z.string().trim().regex(/^\d{12}$/, "Aadhaar must be exactly 12 digits"),
     joinedOtherGroupBefore: booleanFromForm,
-    previousGroupLeaveReason: z.string().optional().default(""),
-    joinReason: z.string().optional().default(""),
+    previousGroupLeaveReason: z.string().trim().max(1000).optional().default(""),
+    joinReason: z.string().trim().max(1000).optional().default(""),
     terms: booleanFromForm.refine(Boolean, "Terms must be accepted")
   }).superRefine((body, ctx) => {
     if (body.joinedOtherGroupBefore && !body.previousGroupLeaveReason.trim()) {
@@ -49,11 +52,11 @@ export const createRiderSchema = z.object({
 export const listRidersSchema = z.object({
   query: z.object({
     page: z.coerce.number().min(1).default(1),
-    limit: z.coerce.number().min(1).max(1000).default(1000),
-    search: z.string().optional(),
+    limit: z.coerce.number().min(1).max(100).default(25),
+    search: z.string().trim().max(100).optional(),
     status: status.optional(),
-    city: z.string().optional(),
-    state: z.string().optional(),
+    city: z.string().trim().max(80).optional(),
+    state: z.string().trim().max(80).optional(),
     sortBy: z.enum(["fullName", "email", "phone", "city", "bikeNumber", "status", "createdAt"]).default("createdAt"),
     sortOrder: z.enum(["asc", "desc"]).default("desc")
   })

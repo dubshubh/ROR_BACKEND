@@ -15,3 +15,12 @@ export const createPartnerEnquirySchema = z.object({
 export const updatePartnerEnquirySchema = z.object({
   body: z.object({ status: z.enum(["new", "reviewed"]) })
 });
+
+export const listPartnerEnquiriesSchema = z.object({
+  query: z.object({
+    page: z.coerce.number().int().min(1).default(1),
+    limit: z.coerce.number().int().min(1).max(100).default(20),
+    status: z.enum(["new", "reviewed"]).optional(),
+    search: z.string().trim().max(100).optional()
+  })
+});
