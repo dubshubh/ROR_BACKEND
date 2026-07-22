@@ -7,7 +7,7 @@ import { maskAadhaar } from "../utils/mask.js";
 import { recordAudit } from "../services/audit.service.js";
 import { Readable } from "node:stream";
 import { sendEmail } from "../services/email.service.js";
-import { registrationReceivedTemplate, riderApprovedTemplate } from "../services/email-template.service.js";
+import { registrationReceivedTemplate, riderApprovedTemplate, riderContactAgainTemplate, riderPendingTemplate, riderRejectedTemplate } from "../services/email-template.service.js";
 import { env } from "../config/env.js";
 
 async function sendAutomationSafely(input: Parameters<typeof sendEmail>[0]) {
@@ -117,25 +117,20 @@ export async function streamRiderDocument(req: Request, res: Response) {
 export async function updateRiderStatus(req: Request, res: Response) {
   const rider = await Rider.findById(req.params.id);
   if (!rider) return res.status(404).json({ success: false, message: "Rider not found" });
-  const wasApproved = rider.status === "approved";
   rider.status = req.body.status;
+  rider.adminRemark = req.body.remark;
   await rider.save();
-  await recordAudit({ adminId: req.admin?.id, action: `rider.${req.body.status}`, entityType: "rider", entityId: rider.id, metadata: { status: req.body.status } });
-  if (!wasApproved && rider.status === "approved") {
-    const publicOrigin = env.FRONTEND_URL.split(",")[0]?.trim() || "http://localhost:3000";
-    await sendAutomationSafely({
-      recipients: [{ email: rider.email, name: rider.fullName }],
-      subject: "Welcome to Rebels on Roads — application approved",
-      htmlContent: riderApprovedTemplate(rider.fullName, publicOrigin),
-      textContent: `Welcome ${rider.fullName}! Your Rebels on Roads rider application has been approved. Watch the official channels for ride briefings and assembly details.`,
-      category: "rider-approved",
-      audience: "rider",
-      source: "automation",
-      relatedEntityType: "rider",
-      relatedEntityId: rider.id
-    });
-  }
-  return sendSuccess(res, { id: rider.id, status: rider.status }, "Rider status updated");
+  await recordAudit({ adminId: req.admin?.id, action: `rider.${req.body.status}`, entityType: "rider", entityId: rider.id, metadata: { status: req.body.status, remark: req.body.remark } });
+  const origin = env.FRONTEND_URL.split(",")[0]?.trim() || "http://localhost:3000";
+  const messages = {
+    approved: { subject:"Welcome to Rebels on Roads — application approved", html:riderApprovedTemplate(rider.fullName,origin,rider.adminRemark,env.WHATSAPP_GROUP_URL,env.INSTAGRAM_URL), text:`Welcome ${rider.fullName}! Your application is approved.${rider.adminRemark ? ` Admin note: ${rider.adminRemark}` : ""}${env.WHATSAPP_GROUP_URL ? ` WhatsApp: ${env.WHATSAPP_GROUP_URL}` : ""}${env.INSTAGRAM_URL ? ` Instagram: ${env.INSTAGRAM_URL}` : ""}` },
+    rejected: { subject:"An update on your Rebels on Roads application", html:riderRejectedTemplate(rider.fullName,rider.adminRemark), text:`Hello ${rider.fullName}. We cannot approve your application at this time.${rider.adminRemark ? ` Review note: ${rider.adminRemark}` : ""}` },
+    contact_again: { subject:"Action needed — update your rider application", html:riderContactAgainTemplate(rider.fullName,origin,rider.adminRemark), text:`Hello ${rider.fullName}. Please apply again with corrected information.${rider.adminRemark ? ` What needs attention: ${rider.adminRemark}` : ""}` },
+    pending: { subject:"Your Rebels on Roads application is pending", html:riderPendingTemplate(rider.fullName,rider.adminRemark), text:`Hello ${rider.fullName}. Your application is pending.${rider.adminRemark ? ` Admin note: ${rider.adminRemark}` : ""}` }
+  } as const;
+  const message = messages[rider.status];
+  await sendAutomationSafely({ recipients:[{email:rider.email,name:rider.fullName}],subject:message.subject,htmlContent:message.html,textContent:message.text,category:`rider-${rider.status}`,audience:"rider",source:"automation",relatedEntityType:"rider",relatedEntityId:rider.id });
+  return sendSuccess(res, { id: rider.id, status: rider.status, adminRemark: rider.adminRemark }, "Rider status updated and email queued");
 }
 
 export async function deleteRider(req: Request, res: Response) {
@@ -144,6 +139,15 @@ export async function deleteRider(req: Request, res: Response) {
   await deleteAssets([rider.dlFront, rider.dlBack, rider.aadhaarFront, rider.aadhaarBack]);
   await recordAudit({ adminId: req.admin?.id, action: "rider.deleted", entityType: "rider", entityId: rider.id });
   return sendSuccess(res, null, "Rider deleted");
+}
+
+export async function bulkDeleteRiders(req: Request, res: Response) {
+  const riders = await Rider.find({ _id: { $in: req.body.ids } });
+  if (!riders.length) return res.status(404).json({ success: false, message: "No riders found" });
+  await Rider.deleteMany({ _id: { $in: riders.map((rider) => rider._id) } });
+  await deleteAssets(riders.flatMap((rider) => [rider.dlFront, rider.dlBack, rider.aadhaarFront, rider.aadhaarBack]));
+  await Promise.all(riders.map((rider) => recordAudit({ adminId:req.admin?.id,action:"rider.bulk-deleted",entityType:"rider",entityId:rider.id })));
+  return sendSuccess(res, { deleted:riders.length }, `${riders.length} riders deleted`);
 }
 
 export async function getDashboardStats(_req: Request, res: Response) {

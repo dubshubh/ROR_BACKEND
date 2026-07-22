@@ -1,7 +1,7 @@
 import { z } from "zod";
 
 const indianPhone = /^[6-9]\d{9}$/;
-const status = z.enum(["pending", "approved", "rejected"]);
+const status = z.enum(["pending", "approved", "rejected", "contact_again"]);
 const booleanFromForm = z.preprocess((value) => {
   if (value === "true") return true;
   if (value === "false") return false;
@@ -62,6 +62,5 @@ export const listRidersSchema = z.object({
   })
 });
 
-export const updateStatusSchema = z.object({
-  body: z.object({ status })
-});
+export const updateStatusSchema = z.object({ body: z.object({ status, remark: z.string().trim().max(1000).optional().default("") }) });
+export const bulkDeleteRidersSchema = z.object({ body: z.object({ ids: z.array(z.string().regex(/^[a-f\d]{24}$/i)).min(1).max(100) }) });

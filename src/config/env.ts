@@ -25,6 +25,8 @@ const envSchema = z.object({
   BREVO_SENDER_EMAIL: z.string().email().default("rebelsonroads@gmail.com"),
   BREVO_SENDER_NAME: z.string().trim().min(1).default("Rebels on Roads"),
   BREVO_REPLY_TO_EMAIL: z.string().email().default("rebelsonroads@gmail.com")
+  ,WHATSAPP_GROUP_URL: z.string().url().optional()
+  ,INSTAGRAM_URL: z.string().url().optional()
 }).superRefine((values, ctx) => {
   if (values.EMAIL_ENABLED && !values.BREVO_API_KEY) ctx.addIssue({ code: z.ZodIssueCode.custom, path: ["BREVO_API_KEY"], message: "BREVO_API_KEY is required when EMAIL_ENABLED=true" });
 });

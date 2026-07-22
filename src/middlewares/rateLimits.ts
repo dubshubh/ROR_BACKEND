@@ -11,6 +11,7 @@ function createLimiter(windowMs: number, limit: number, message: string) {
 }
 
 export const loginRateLimit = createLimiter(15 * 60 * 1000, 5, "Too many login attempts. Try again later.");
+export const passwordResetRateLimit = createLimiter(15 * 60 * 1000, 5, "Too many password reset attempts. Try again later.");
 export const registrationRateLimit = createLimiter(60 * 60 * 1000, 10, "Too many registration attempts. Try again later.");
 export const enquiryRateLimit = createLimiter(60 * 60 * 1000, 10, "Too many enquiries. Try again later.");
 export const adminUploadRateLimit = createLimiter(15 * 60 * 1000, 60, "Too many upload requests. Try again later.");

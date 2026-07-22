@@ -1,7 +1,8 @@
 import { Router } from "express";
-import { getCurrentAdmin, loginAdmin, logoutAdmin } from "../controllers/auth.controller.js";
+import { forgotAdminPassword, getCurrentAdmin, loginAdmin, logoutAdmin, resetAdminPassword } from "../controllers/auth.controller.js";
 import {
   deleteRider,
+  bulkDeleteRiders,
   exportCsv,
   exportExcel,
   getDashboardStats,
@@ -16,17 +17,19 @@ import { requireAdmin } from "../middlewares/auth.js";
 import { contentMediaUpload, logoUpload } from "../middlewares/upload.js";
 import { validate } from "../middlewares/validate.js";
 import { asyncHandler } from "../utils/asyncHandler.js";
-import { loginSchema } from "../validators/admin.validator.js";
-import { listRidersSchema, updateStatusSchema } from "../validators/rider.validator.js";
+import { forgotPasswordSchema, loginSchema, resetPasswordSchema } from "../validators/admin.validator.js";
+import { bulkDeleteRidersSchema, listRidersSchema, updateStatusSchema } from "../validators/rider.validator.js";
 import { deletePartnerEnquiry, listPartnerEnquiries, updatePartnerEnquiry } from "../controllers/partner.controller.js";
 import { listPartnerEnquiriesSchema, updatePartnerEnquirySchema } from "../validators/partner.validator.js";
-import { adminEmailRateLimit, adminUploadRateLimit, loginRateLimit } from "../middlewares/rateLimits.js";
+import { adminEmailRateLimit, adminUploadRateLimit, loginRateLimit, passwordResetRateLimit } from "../middlewares/rateLimits.js";
 import { listEmailLogs, sendAdminEmail } from "../controllers/email.controller.js";
 import { listEmailLogsSchema, sendAdminEmailSchema } from "../validators/email.validator.js";
 
 export const adminRoutes = Router();
 
 adminRoutes.post("/login", loginRateLimit, validate(loginSchema), asyncHandler(loginAdmin));
+adminRoutes.post("/forgot-password", passwordResetRateLimit, validate(forgotPasswordSchema), asyncHandler(forgotAdminPassword));
+adminRoutes.post("/reset-password", passwordResetRateLimit, validate(resetPasswordSchema), asyncHandler(resetAdminPassword));
 adminRoutes.use(asyncHandler(requireAdmin));
 adminRoutes.get("/me", getCurrentAdmin);
 adminRoutes.post("/logout", logoutAdmin);
@@ -43,6 +46,7 @@ adminRoutes.get("/partner-enquiries", validate(listPartnerEnquiriesSchema), asyn
 adminRoutes.patch("/partner-enquiries/:id", validate(updatePartnerEnquirySchema), asyncHandler(updatePartnerEnquiry));
 adminRoutes.delete("/partner-enquiries/:id", asyncHandler(deletePartnerEnquiry));
 adminRoutes.get("/riders", validate(listRidersSchema), asyncHandler(getRiders));
+adminRoutes.delete("/riders", validate(bulkDeleteRidersSchema), asyncHandler(bulkDeleteRiders));
 adminRoutes.get("/riders/export/csv", asyncHandler(exportCsv));
 adminRoutes.get("/riders/export/excel", asyncHandler(exportExcel));
 adminRoutes.get("/riders/:id/documents/:field", asyncHandler(streamRiderDocument));
