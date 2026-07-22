@@ -13,8 +13,9 @@ export const app = express();
 if (env.TRUST_PROXY) app.set("trust proxy", 1);
 app.use(requestLogger);
 app.use(helmet());
+const configuredOrigins = env.CORS_ORIGINS || env.FRONTEND_URL;
 const allowedOrigins = new Set([
-  ...env.FRONTEND_URL.split(",").map((origin) => origin.trim().replace(/\/$/, "")),
+  ...configuredOrigins.split(",").map((origin) => origin.trim().replace(/\/$/, "")).filter(Boolean),
   ...(env.NODE_ENV === "development"
     ? ["http://localhost:3000", "http://127.0.0.1:3000", "http://localhost:3001", "http://127.0.0.1:3001"]
     : [])
