@@ -15,6 +15,7 @@ const envSchema = z.object({
   COOKIE_DOMAIN: z.string().trim().optional(),
   TRUST_PROXY: z.enum(["true", "false"]).default("false").transform((value) => value === "true"),
   FRONTEND_URL: z.string().min(1).default("http://localhost:3000"),
+  CORS_ORIGINS: z.string().trim().optional(),
   CLOUDINARY_CLOUD_NAME: z.string().min(1),
   CLOUDINARY_API_KEY: z.string().min(1),
   CLOUDINARY_API_SECRET: z.string().min(1),
