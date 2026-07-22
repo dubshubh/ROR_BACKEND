@@ -2,6 +2,7 @@ import { Router } from "express";
 import { getCurrentAdmin, loginAdmin, logoutAdmin } from "../controllers/auth.controller.js";
 import {
   deleteRider,
+  bulkDeleteRiders,
   exportCsv,
   exportExcel,
   getDashboardStats,
@@ -17,7 +18,7 @@ import { contentMediaUpload, logoUpload } from "../middlewares/upload.js";
 import { validate } from "../middlewares/validate.js";
 import { asyncHandler } from "../utils/asyncHandler.js";
 import { loginSchema } from "../validators/admin.validator.js";
-import { listRidersSchema, updateStatusSchema } from "../validators/rider.validator.js";
+import { bulkDeleteRidersSchema, listRidersSchema, updateStatusSchema } from "../validators/rider.validator.js";
 import { deletePartnerEnquiry, listPartnerEnquiries, updatePartnerEnquiry } from "../controllers/partner.controller.js";
 import { listPartnerEnquiriesSchema, updatePartnerEnquirySchema } from "../validators/partner.validator.js";
 import { adminEmailRateLimit, adminUploadRateLimit, loginRateLimit } from "../middlewares/rateLimits.js";
@@ -43,6 +44,7 @@ adminRoutes.get("/partner-enquiries", validate(listPartnerEnquiriesSchema), asyn
 adminRoutes.patch("/partner-enquiries/:id", validate(updatePartnerEnquirySchema), asyncHandler(updatePartnerEnquiry));
 adminRoutes.delete("/partner-enquiries/:id", asyncHandler(deletePartnerEnquiry));
 adminRoutes.get("/riders", validate(listRidersSchema), asyncHandler(getRiders));
+adminRoutes.delete("/riders", validate(bulkDeleteRidersSchema), asyncHandler(bulkDeleteRiders));
 adminRoutes.get("/riders/export/csv", asyncHandler(exportCsv));
 adminRoutes.get("/riders/export/excel", asyncHandler(exportExcel));
 adminRoutes.get("/riders/:id/documents/:field", asyncHandler(streamRiderDocument));

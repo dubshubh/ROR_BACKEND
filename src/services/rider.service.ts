@@ -9,7 +9,7 @@ export type ListOptions = {
   page: number;
   limit: number;
   search?: string;
-  status?: "pending" | "approved" | "rejected";
+  status?: "pending" | "approved" | "rejected" | "contact_again";
   city?: string;
   state?: string;
   sortBy: string;

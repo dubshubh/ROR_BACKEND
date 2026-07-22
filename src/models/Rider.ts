@@ -31,7 +31,8 @@ const riderSchema = new Schema(
     dlBack: { type: fileSchema, default: null },
     aadhaarFront: { type: fileSchema, required: true },
     aadhaarBack: { type: fileSchema, required: true },
-    status: { type: String, enum: ["pending", "approved", "rejected"], default: "pending" }
+    status: { type: String, enum: ["pending", "approved", "rejected", "contact_again"], default: "pending" },
+    adminRemark: { type: String, default: "", trim: true, maxlength: 1000 }
   },
   { timestamps: true }
 );

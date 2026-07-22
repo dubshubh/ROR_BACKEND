@@ -6,8 +6,13 @@ import { sendSuccess } from "../utils/apiResponse.js";
 import { authCookieOptions } from "../utils/cookies.js";
 import { recordAudit } from "../services/audit.service.js";
 
+const ADMIN_EMAIL = "rebelsonroads@gmail.com";
+
 export async function loginAdmin(req: Request, res: Response) {
   const email = req.body.email.trim().toLowerCase();
+  if (email !== ADMIN_EMAIL) {
+    return res.status(401).json({ success: false, message: "Invalid email or password" });
+  }
   const admin = (await Admin.findOne({ email })) as AdminDocument | null;
   if (!admin || !(await admin.comparePassword(req.body.password))) {
     return res.status(401).json({ success: false, message: "Invalid email or password" });
