@@ -5,9 +5,7 @@ const adminSchema = new Schema(
   {
     email: { type: String, required: true, unique: true, lowercase: true, trim: true },
     password: { type: String, required: true, minlength: 8 },
-    role: { type: String, enum: ["admin"], default: "admin" },
-    passwordResetToken: { type: String, select: false },
-    passwordResetExpires: { type: Date, select: false }
+    role: { type: String, enum: ["admin"], default: "admin" }
   },
   { timestamps: true }
 );
