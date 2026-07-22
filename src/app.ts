@@ -8,6 +8,7 @@ import { publicRoutes } from "./routes/public.routes.js";
 import { errorHandler } from "./middlewares/errorHandler.js";
 import { requestLogger } from "./middlewares/requestLogger.js";
 import { AppError } from "./utils/appError.js";
+import { isRorVercelOrigin } from "./utils/cors.js";
 
 export const app = express();
 
@@ -36,6 +37,9 @@ function isAllowedOrigin(origin: string) {
   const normalizedOrigin = origin.replace(/\/$/, "");
   if (allowedOrigins.has(normalizedOrigin)) return true;
   if (allowedOriginPatterns.some((pattern) => pattern.test(normalizedOrigin))) return true;
+  // Vercel generates a new hostname for every preview deployment. Restrict the
+  // fallback to this project's deployment prefix instead of trusting all of vercel.app.
+  if (isRorVercelOrigin(normalizedOrigin)) return true;
 
   if (env.NODE_ENV === "development") {
     try {
